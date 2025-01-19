@@ -13,6 +13,9 @@ func main() {
 	}
 	fmt.Println("The quotient is: ", quotient, " and the remainder is: ", remainder)
 	fmt.Printf("The quotient is %v and the remainder is %v", quotient, remainder)
+
+	fmt.Println("Sum of 1, 2, 3 and 4 is", sum(1,2,3,4))
+	fmt.Println("Sum of 1, 2, 3 is", sum(1,2,3))
 }
 
 func division (numerator int, denominator int) (int, int, error) {
@@ -25,4 +28,14 @@ func division (numerator int, denominator int) (int, int, error) {
 	var remainder int = numerator%denominator
 
 	return quotient, remainder, err
+}
+
+// varidic funtion - variable number of arguments
+// only one variable argument allowed and ir must be the last parameter
+func sum(nums ...int) int {
+	total := 0
+	for _, n := range nums {
+		total += n
+	}
+	return total
 }
