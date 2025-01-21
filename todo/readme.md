@@ -43,12 +43,12 @@ Defines the core Todo structure and implements methods for managing todos.
 - Todos: A slice of Todo objects.
 
 #### Methods:
-- add(title string): Adds a new todo to the list.
-- validateIndex(index int): Validates if the given index is within bounds.
-- delete(index int): Removes a todo at the specified index.
-- edit(index int, newTitle string): Updates the title of a todo.
-- toggle(index int): Toggles the completion status of a todo.
-- print(): Displays all todos with their details.
+- `add(title string)`: Adds a new todo to the list.
+- `validateIndex(index int)`: Validates if the given index is within bounds.
+- `delete(index int)`: Removes a todo at the specified index.
+- `edit(index int, newTitle string)`: Updates the title of a todo.
+- `toggle(index int)`: Toggles the completion status of a todo.
+- `print()`: Displays all todos with their details.
 
 ---
 
