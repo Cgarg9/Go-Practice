@@ -33,6 +33,7 @@ func main() {
     cmdFlags := NewCmdFlags() // Parse command-line flags
     cmdFlags.Execute(todos)   // Execute commands based on flags
 }
+```
 
 ### 2. `todo.go`
 Defines the core Todo structure and implements methods for managing todos.
@@ -48,3 +49,62 @@ Defines the core Todo structure and implements methods for managing todos.
 - edit(index int, newTitle string): Updates the title of a todo.
 - toggle(index int): Toggles the completion status of a todo.
 - print(): Displays all todos with their details.
+
+---
+
+## Usage
+
+### Commands:
+
+1. Add a Todo:
+```
+go run main.go todo.go storage.go command.go -add "Buy groceries"
+```
+2. List All Todos:
+```
+go run main.go todo.go storage.go command.go -list
+```
+3. Edit a Todo:
+```
+go run main.go todo.go storage.go command.go -edit 0:"Buy milk and bread"
+```
+4. Delete a Todo:
+```
+go run main.go todo.go storage.go command.go -del 0
+```
+5. Toggle a Todo:
+```
+go run main.go todo.go storage.go command.go -toggle 1
+```
+
+---
+
+## Dependencies
+
+- Go (minimum version 1.18 recommended)
+- Standard Go libraries (flag, fmt, os, strconv, strings, time)
+- Aqua Security Table Library (github.com/aquasecurity/table) for displaying todos in a tabular format.
+
+---
+
+## How to Run
+
+1. Clone or download the repository.
+2. Ensure Go is installed and added to your system PATH.
+3. Install the Aqua Security Table library:
+```
+go get github.com/aquasecurity/table
+```
+4. Navigate to the project directory.
+5. Run the application using:
+```
+go run main.go todo.go storage.go command.go -<command>
+```
+
+---
+
+## Future Improvements
+
+- Add persistent storage support using files or a database.
+- Support for prioritizing todos.
+- Enhanced error handling and validation.
