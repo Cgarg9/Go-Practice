@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -36,6 +37,22 @@ func isValidURL(input string) bool {
 	}
 
 	return true
+}
+
+// checkHostResolvable checks if the host in the URL is resolvable using net.LookupHost().
+func checkHostResolvable(input string) error {
+	parsedURL, err := url.Parse(input)
+	if err != nil {
+		return err
+	}
+
+	// Try resolving the host
+	_, err = net.LookupHost(parsedURL.Host)
+	if err != nil {
+		return fmt.Errorf("could not resolve host: %v", err)
+	}
+
+	return nil
 }
 
 func generateShortURL() string {
@@ -102,6 +119,13 @@ func shortenURLHandler(w http.ResponseWriter, r *http.Request) {
 		req.URL = "http://" + req.URL
 	}
 
+	// Check if the host is resolvable
+	if err := checkHostResolvable(req.URL); err != nil {
+		fmt.Println("Host resolution error:", err)
+		http.Error(w, fmt.Sprintf("Could not resolve host: %s", err), http.StatusBadRequest)
+		return
+	}
+
 	fmt.Println("Shortening URL:", req.URL)
 
 	shortURL := generateShortURL()
@@ -126,6 +150,7 @@ func shortenURLHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
 }
+
 func saveStore() {
 	mu.Lock()
 	defer mu.Unlock()
