@@ -10,7 +10,12 @@ import (
 	"os"
 	"sync"
 	"time"
+	"golang.org/x/time/rate"
 )
+
+var rateLimiters = make(map[string]*rate.Limiter)
+var rateMu sync.Mutex
+const requestsPerMinute = 5
 
 var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
 var store = make(map[string]string)
@@ -54,6 +59,20 @@ func checkHostResolvable(input string) error {
 
 	return nil
 }
+
+func isRateExceeded(ip string) bool {
+	rateMu.Lock()
+	defer rateMu.Unlock()
+
+	limiter, exists := rateLimiters[ip]
+	if !exists {
+		limiter = rate.NewLimiter(rate.Every(time.Minute/time.Duration(requestsPerMinute)), requestsPerMinute)
+		rateLimiters[ip] = limiter
+	}
+
+	return !limiter.Allow()
+}
+
 
 func generateShortURL() string {
 	shortURL := ""
@@ -123,6 +142,19 @@ func shortenURLHandler(w http.ResponseWriter, r *http.Request) {
 	if err := checkHostResolvable(req.URL); err != nil {
 		fmt.Println("Host resolution error:", err)
 		http.Error(w, fmt.Sprintf("Could not resolve host: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	// Get client IP
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		http.Error(w, "Unable to determine IP", http.StatusInternalServerError)
+		return
+	}
+
+	// Check rate exceeded or not separately
+	if isRateExceeded(ip) {
+		http.Error(w, "Too many requests. Try again after sometime.", http.StatusTooManyRequests)
 		return
 	}
 
