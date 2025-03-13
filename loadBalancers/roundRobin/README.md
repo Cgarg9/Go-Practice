@@ -121,7 +121,31 @@ func newSimpleServer(addr string) *simpleServer {
 - Parses it into a *url.URL* object.
 - Initializes a reverse proxy for that server.
 
-### 5. **Round-Robin Server Selection**
+### 5. **isAlive**
+
+```go
+func (s *simpleServer) isAlive() bool {
+	client := http.Client{
+		Timeout: 2 * time.Second, // Prevent long delays
+	}
+
+	resp, err := client.Head(s.addr) // HEAD request (lightweight)
+	if err != nil {
+		fmt.Printf("Health check failed for %s: %v\n", s.addr, err)
+		return false
+	}
+	defer resp.Body.Close()
+
+	// Server is alive if status is 2xx or 3xx
+	return resp.StatusCode >= 200 && resp.StatusCode < 400
+}
+```
+
+- Takes server pointer as input.
+- Checks whether server is available or not by sending light head request.
+- Returns a boolean based on whether server is available or not.
+
+### 6. **Round-Robin Server Selection**
 
 ```go
 func (lb *LoadBalancer) getNextAvailableServer() Server {
@@ -138,11 +162,18 @@ func (lb *LoadBalancer) getNextAvailableServer() Server {
 - Selects the next backend server in a round-robin fashion.
 - If a server is unavailable, it skips to the next.
 
-### 6. **Request Forwarding**
+### 6. **Request Forwarding (if servers available)**
 
 ```go
 func (lb *LoadBalancer) serveProxy(rw http.ResponseWriter, req *http.Request) {
     targetServer := lb.getNextAvailableServer()
+
+    // Case when no server available
+	if targetServer == nil {
+		http.Error(rw, "No available servers", http.StatusServiceUnavailable)
+		return
+	}
+
     fmt.Printf("forwarding request to address %q\n", targetServer.Address())
     targetServer.Serve(rw, req)
 }
@@ -153,7 +184,6 @@ func (lb *LoadBalancer) serveProxy(rw http.ResponseWriter, req *http.Request) {
 
 ## Future Improvements
 
-- *Health Checks:* Implement periodic health checks to detect if a backend server is down and exclude it from the round-robin rotation.
 - *Dynamic Server Addition/Removal:* Allow adding/removing backend servers at runtime.
 - *Logging & Monitoring:* Add request logs and metrics to track performance.
 - *Sticky Sessions:* Maintain session affinity for specific clients.
