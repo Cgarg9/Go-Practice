@@ -6,6 +6,7 @@ A simple URL shortener API built in Go. This project allows you to shorten long 
 
 1. **Shorten URL**: A user provides a long URL via the `/shorten` endpoint. The application generates a unique short URL, stores the mapping, and returns the short URL.
 2. **Redirect to Original URL**: When the short URL is accessed, the application redirects the user to the original long URL.
+3. **Requests Per Minute Limit** : 5
 
 ## How to Run
 
@@ -17,10 +18,11 @@ A simple URL shortener API built in Go. This project allows you to shorten long 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Cgarg9/url-shortener.git
-   cd url-shortener
+   git clone https://github.com/Cgarg9/Go-Practice.git
+   cd GO_PRACTICE/urlShortener
+   go mod init urlShortner
     ```
-2. Install dependencies (if any):
+2. Install dependencies :
     ```bash
     go mod tidy
     ```
