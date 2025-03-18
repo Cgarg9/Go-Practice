@@ -6,6 +6,7 @@ A simple URL shortener API built in Go. This project allows you to shorten long 
 
 1. **Shorten URL**: A user provides a long URL via the `/shorten` endpoint. The application generates a unique short URL, stores the mapping, and returns the short URL.
 2. **Redirect to Original URL**: When the short URL is accessed, the application redirects the user to the original long URL.
+3. **Requests Per Minute Limit** : 5
 
 ## How to Run
 
@@ -17,10 +18,11 @@ A simple URL shortener API built in Go. This project allows you to shorten long 
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Cgarg9/url-shortener.git
-   cd url-shortener
+   git clone https://github.com/Cgarg9/Go-Practice.git
+   cd GO_PRACTICE/urlShortener
+   go mod init urlShortner
     ```
-2. Install dependencies (if any):
+2. Install dependencies :
     ```bash
     go mod tidy
     ```
@@ -63,6 +65,49 @@ The server will start on port *8080*.
 ## File Storage 
 
 The application stores the mapping between short URLs and long URLs in a file named *store.json*. Each time the application runs, it loads the store data and persists any changes after generating a new short URL.
+
+## Rate Limiting
+
+'''bash
+"golang.org/x/time/rate"
+'''
+-import the required package
+
+'''bash
+var rateLimiters = make(map[string]*rate.Limiter)
+var rateMu sync.Mutex
+const requestsPerMinute = 5
+'''
+- mapping rate limiter and declaring required rate 
+
+'''bash
+// Get client IP
+	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		http.Error(w, "Unable to determine IP", http.StatusInternalServerError)
+		return
+	}
+'''
+
+- get the ip of the user
+
+'''bash
+func isRateExceeded(ip string) bool {
+	rateMu.Lock()
+	defer rateMu.Unlock()
+
+	limiter, exists := rateLimiters[ip]
+	if !exists {
+		limiter = rate.NewLimiter(rate.Every(time.Minute/time.Duration(requestsPerMinute)), requestsPerMinute)
+		rateLimiters[ip] = limiter
+	}
+
+	return !limiter.Allow()
+}
+'''
+
+-isRateExceeded function takes ip as input check whether rate is exceeded or not and returns a boolean
+
 
 ## Ways to Contribute
 
